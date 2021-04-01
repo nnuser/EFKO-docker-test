@@ -1,0 +1,38 @@
+version: '3'
+services:
+  #Параметры для настройки php apache
+  web:
+    build: ./web
+    environment:
+      - APACHE_RUN_USER=#1000
+      - APACHE_DOCUMENT_ROOT=${APP_PATH_CONTAINER}/web
+#      - APACHE_RUN_USER=www-data
+    volumes:
+      - ${APP_PATH_HOST}:${APP_PATH_CONTAINER}
+    ports:
+      - 8080:80
+    working_dir: ${APP_PATH_CONTAINER}
+
+  #Параметры для настройки базы
+  db:
+    image: mariadb:10.4
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: test1234
+    volumes:
+      - ${DB_PATH_HOST}:/var/lib/mysql
+
+  #Параметры для настройки adminer, веб утилита для работы с базой
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 6080:8080
+
+  #Композер для запуска базового приложения yii2
+  composer:
+    image: composer:2
+    volumes:
+      - ${APP_PATH_HOST}:${APP_PATH_CONTAINER}
+    working_dir: ${APP_PATH_CONTAINER}
+    command: composer install
